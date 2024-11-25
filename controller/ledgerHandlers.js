@@ -32,10 +32,23 @@ exports.getLedger = async (req,res, next)=>{
        next(error);
     }
 };
+//To get balance summary for all users
 exports.balanceSummary = async (req, res, next)=>{
     try {
-        
+        const transactions = await ledgerModel.find({ userId: req.params.userId }); //get ledger
+
+        const income = transactions
+            .filter((t) => t.type === 'income')//specify type to income
+            .reduce((acc, t) => acc + t.amount, 0);
+
+        const expense = transactions
+            .filter((t) => t.type === 'expense')//specify type to expenses
+            .reduce((acc, t) => acc + t.amount, 0);
+
+        const balance = income - expense;
+
+        res.json({ income, expense, balance });
     } catch (error) {
-        
+        res.status(500).json({message: error.message})
     }
 }
